@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>막차마켓 | 충북대 주변 마감세일 지도</title>
+<!-- 네이버 지도 API: 아래 YOUR_CLIENT_ID 를 발급받은 Client ID로 바꿔주세요 -->
+<script src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=YOUR_CLIENT_ID"></script>
+<style>
+  :root{
+    --ink:#15171c; --sub:#5b6270; --line:#e5e7eb; --bg:#f6f7f9;
+    --accent:#ff5a1f; --accent-dark:#d8430d; --ok:#0f8a52; --warn:#b45309;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:system-ui,'Apple SD Gothic Neo','Nanum Gothic',sans-serif;
+    color:var(--ink); background:var(--bg); -webkit-text-size-adjust:100%;
+  }
+  header.top{
+    position:sticky; top:0; z-index:1200; background:#fff;
+    border-bottom:1px solid var(--line); padding:10px 16px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .logo{font-weight:800; font-size:18px; letter-spacing:-.4px}
+  .logo span{color:var(--accent)}
+  .tag{font-size:12px; color:var(--sub); margin-left:auto}
+  .clock{
+    font-size:12px; font-weight:700; color:#fff; background:var(--ink);
+    padding:4px 8px; border-radius:999px;
+  }
+  .wrap{max-width:1100px; margin:0 auto; padding:14px 16px 90px}
+  .filters{display:flex; gap:8px; overflow-x:auto; padding:4px 0 10px}
+  .chip{
+    flex:0 0 auto; border:1px solid var(--line); background:#fff; color:var(--sub);
+    padding:8px 14px; border-radius:999px; font-size:13px; font-weight:600; cursor:pointer;
+  }
+  .chip[aria-pressed="true"]{background:var(--ink); color:#fff; border-color:var(--ink)}
+  #map{height:380px; border-radius:14px; border:1px solid var(--line); background:#dfe3e8}
+  .maphint{font-size:12px; color:var(--sub); margin:8px 2px 0}
+  h2{font-size:17px; margin:22px 2px 10px}
+  .count{font-size:13px; color:var(--sub); font-weight:600}
+  .cards{display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+  .card{
+    background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px;
+    cursor:pointer; text-align:left; font:inherit; color:inherit;
+  }
+  .card:hover{border-color:var(--accent)}
+  .card h3{margin:0 0 4px; font-size:16px}
+  .meta{font-size:13px; color:var(--sub); display:flex; gap:10px; flex-wrap:wrap}
+  .badge{
+    display:inline-block; margin-top:10px; font-size:12px; font-weight:700;
+    color:#fff; background:var(--accent); padding:4px 10px; border-radius:999px;
+  }
+  .badge.soon{background:var(--warn)}
+  .badge.none{background:#9aa1ad}
+  /* 하단 시트 */
+  .sheet{
+    position:fixed; left:0; right:0; bottom:0; z-index:1400; background:#fff;
+    border-radius:18px 18px 0 0; box-shadow:0 -10px 40px rgba(0,0,0,.22);
+    max-height:86vh; overflow-y:auto; transform:translateY(102%);
+    transition:transform .28s ease;
+  }
+  .sheet.open{transform:translateY(0)}
+  .sheet-inner{max-width:720px; margin:0 auto; padding:16px 16px 28px}
+  .sheet-head{display:flex; align-items:flex-start; gap:10px}
+  .sheet-head h3{margin:0; font-size:19px}
+  .close{
+    margin-left:auto; border:1px solid var(--line); background:#fff; border-radius:10px;
+    width:34px; height:34px; font-size:18px; cursor:pointer; color:var(--sub);
+  }
+  .item{display:flex; gap:12px; align-items:center; padding:12px 0; border-top:1px solid var(--line)}
+  .thumb{
+    width:52px; height:52px; border-radius:12px; flex:0 0 auto;
+    display:grid; place-items:center; font-size:24px; background:var(--bg);
+  }
+  .iname{font-weight:700; font-size:15px}
+  .ileft{font-size:12px; color:var(--sub)}
+  .price{margin-left:auto; text-align:right; flex:0 0 auto}
+  .was{font-size:12px; color:#9aa1ad; text-decoration:line-through}
+  .now{font-size:16px; font-weight:800; color:var(--accent-dark)}
+  .pct{font-size:11px; font-weight:700; color:#fff; background:var(--ok); padding:2px 6px; border-radius:6px}
+  .cta{
+    display:block; width:100%; margin-top:16px; border:0; border-radius:12px;
+    background:var(--accent); color:#fff; font-size:16px; font-weight:800;
+    padding:15px; cursor:pointer;
+  }
+  .cta.done{background:var(--ok)}
+  .note{font-size:12px; color:var(--sub); text-align:center; margin-top:10px}
+  footer{padding:20px 16px 40px; text-align:center; font-size:12px; color:var(--sub)}
+  .pill{display:inline-block; font-size:11px; border:1px solid var(--line); background:#fff;
+    border-radius:999px; padding:3px 8px; color:var(--sub)}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="logo">막차<span>마켓</span></div>
+  <div class="clock" id="clock">--:--</div>
+  <div class="tag">충북대 개신캠퍼스 주변</div>
+</header>
+
+<main class="wrap">
+  <div class="filters" id="filters">
+    <button class="chip" data-f="all" aria-pressed="true">전체</button>
+    <button class="chip" data-f="now" aria-pressed="false">지금 세일중</button>
+    <button class="chip" data-f="walk" aria-pressed="false">도보 10분</button>
+    <button class="chip" data-f="fresh" aria-pressed="false">신선식품</button>
+    <button class="chip" data-f="lunch" aria-pressed="false">도시락·간편식</button>
+  </div>
+
+  <div id="map"></div>
+  <p class="maphint">지도의 <b>주황색 핀</b>을 누르면 그 마트가 지금 마감세일 중인 상품이 아래에서 열립니다.</p>
+
+  <h2>주변 마트 <span class="count" id="count"></span></h2>
+  <div class="cards" id="cards"></div>
+</main>
+
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <div class="sheet-inner">
+    <div class="sheet-head">
+      <div>
+        <h3 id="sheetTitle">마트</h3>
+        <div class="meta" id="sheetMeta"></div>
+      </div>
+      <button class="close" id="closeBtn" aria-label="닫기">×</button>
+    </div>
+    <div id="itemList"></div>
+    <button class="cta" id="reserveBtn">선택한 상품 찜하고 알림받기</button>
+    <p class="note">MVP 시연용 화면입니다. 실제 재고·가격은 점포 사정에 따라 달라질 수 있습니다.</p>
+  </div>
+</div>
+
+<footer>
+  막차마켓 MVP · 충북대학교 캡스톤디자인 프로토타입<br>
+  <span class="pill">표시된 마트·상품·가격은 시연용 예시 데이터입니다</span>
+</footer>
+
+
+<script>
+/* ---------- 데이터 (시연용 예시) ---------- */
+const MARTS = [
+  { id:1, name:"하나로마트 개신점", lat:36.6305, lng:127.4530, walk:5, open:"21:30~22:30",
+    items:[
+      {n:"삼겹살 300g", e:"🥩", was:11900, now:6900, left:3, c:"fresh"},
+      {n:"모둠초밥 12p", e:"🍣", was:12900, now:7700, left:2, c:"lunch"},
+      {n:"샐러드 믹스", e:"🥗", was:4500, now:2200, left:6, c:"fresh"}
+    ]},
+  { id:2, name:"GS더프레시 사직점", lat:36.6338, lng:127.4612, walk:12, open:"22:00~23:00",
+    items:[
+      {n:"불고기 도시락", e:"🍱", was:5900, now:3500, left:4, c:"lunch"},
+      {n:"우유 1L", e:"🥛", was:3200, now:1900, left:8, c:"fresh"},
+      {n:"크림빵 2입", e:"🍞", was:2800, now:1400, left:5, c:"lunch"}
+    ]},
+  { id:3, name:"롯데마트 청주점", lat:36.6243, lng:127.4669, walk:22, open:"21:00~22:00",
+    items:[
+      {n:"손질 고등어 2팩", e:"🐟", was:9800, now:4900, left:2, c:"fresh"},
+      {n:"딸기 500g", e:"🍓", was:12900, now:8900, left:3, c:"fresh"},
+      {n:"치킨 한마리", e:"🍗", was:13900, now:8900, left:1, c:"lunch"}
+    ]},
+  { id:4, name:"이마트 에브리데이 분평점", lat:36.6192, lng:127.4598, walk:28, open:"21:30~22:30",
+    items:[
+      {n:"김밥 2줄", e:"🍙", was:4600, now:2300, left:7, c:"lunch"},
+      {n:"애호박·버섯 묶음", e:"🥬", was:5400, now:2700, left:4, c:"fresh"}
+    ]},
+  { id:5, name:"CU 충대정문점", lat:36.6279, lng:127.4551, walk:3, open:"23:00~24:00",
+    items:[
+      {n:"유통기한 임박 삼각김밥", e:"🍘", was:1500, now:750, left:9, c:"lunch"},
+      {n:"샌드위치", e:"🥪", was:3900, now:1900, left:3, c:"lunch"}
+    ]},
+  { id:6, name:"농협 하나로 복대점", lat:36.6411, lng:127.4451, walk:35, open:"20:30~21:30",
+    items:[
+      {n:"한우 국거리 400g", e:"🍲", was:18900, now:11900, left:2, c:"fresh"},
+      {n:"방울토마토 1kg", e:"🍅", was:7900, now:4400, left:5, c:"fresh"}
+    ]}
+];
+const CBNU = [36.6284, 127.4565];
+
+/* ---------- 시계 / 세일 시간대 판정 ---------- */
+function nowMin(){ const d=new Date(); return d.getHours()*60+d.getMinutes(); }
+function toMin(s){ const [h,m]=s.split(":").map(Number); return h*60+m; }
+function status(m){
+  const [s,e]=m.open.split("~"); const n=nowMin();
+  const st=toMin(s), en=toMin(e)===0?1440:toMin(e);
+  if(n>=st && n<=en) return "now";
+  if(st-n>0 && st-n<=90) return "soon";
+  return "later";
+}
+function badge(m){
+  const s=status(m);
+  if(s==="now") return '<span class="badge">🔥 지금 세일중 · '+m.items.length+'개</span>';
+  if(s==="soon") return '<span class="badge soon">⏰ '+m.open.split("~")[0]+' 세일 시작</span>';
+  return '<span class="badge none">오늘 '+m.open+' 예정</span>';
+}
+function tick(){
+  const d=new Date();
+  document.getElementById("clock").textContent =
+    String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
+}
+tick(); setInterval(tick, 10000);
+
+/* ---------- 지도 ---------- */
+// 네이버 API가 로드되지 않았을 때(키 미설정/도메인 미등록) 안내 표시
+if(typeof naver==="undefined" || !naver.maps){
+  document.getElementById("map").innerHTML =
+    '<div style="height:100%;display:grid;place-items:center;text-align:center;padding:20px;color:#5b6270;font-size:14px;line-height:1.7">'
+   +'<div><b style="color:#15171c;font-size:15px">네이버 지도 Client ID가 설정되지 않았습니다</b><br>'
+   +'HTML 상단 <code>YOUR_CLIENT_ID</code> 부분을 발급받은 키로 바꾸고,<br>'
+   +'네이버 클라우드 플랫폼에 배포 주소를 Web 서비스 URL로 등록해 주세요.</div></div>';
+  throw new Error("naver maps not loaded");
+}
+
+const map = new naver.maps.Map("map", {
+  center: new naver.maps.LatLng(CBNU[0], CBNU[1]),
+  zoom: 14,
+  scrollWheel: false,
+  zoomControl: true,
+  zoomControlOptions: { position: naver.maps.Position.TOP_RIGHT }
+});
+
+new naver.maps.Marker({
+  position: new naver.maps.LatLng(CBNU[0], CBNU[1]),
+  map: map,
+  icon: { content:
+    '<div style="background:#15171c;color:#fff;font-size:11px;font-weight:700;padding:5px 9px;border-radius:999px;white-space:nowrap">🎓 충북대학교</div>',
+    anchor: new naver.maps.Point(45, 12) }
+});
+
+const markers = {};
+function pinHtml(m){
+  const s=status(m);
+  const col = s==="now" ? "#ff5a1f" : (s==="soon" ? "#b45309" : "#9aa1ad");
+  const n = s==="now" ? m.items.length : "";
+  return '<div style="text-align:center">'
+    +'<div style="background:'+col+';color:#fff;font-size:12px;font-weight:800;padding:6px 10px;'
+    +'border-radius:12px;box-shadow:0 3px 10px rgba(0,0,0,.3);white-space:nowrap">'
+    +(n?'🔥 '+n+'개 ':'')+m.name.replace(/ .*$/,'')+'</div>'
+    +'<div style="width:0;height:0;border:6px solid transparent;border-top-color:'+col+';margin:0 auto"></div></div>';
+}
+MARTS.forEach(m=>{
+  const mk = new naver.maps.Marker({
+    position: new naver.maps.LatLng(m.lat, m.lng),
+    map: map,
+    icon: { content: pinHtml(m), anchor: new naver.maps.Point(50, 44) }
+  });
+  naver.maps.Event.addListener(mk, "click", ()=>openSheet(m.id));
+  markers[m.id]=mk;
+});
+
+/* ---------- 목록 ---------- */
+let filter="all";
+function pass(m){
+  if(filter==="all") return true;
+  if(filter==="now") return status(m)==="now";
+  if(filter==="walk") return m.walk<=10;
+  return m.items.some(i=>i.c===filter);
+}
+function renderCards(){
+  const list=MARTS.filter(pass).sort((a,b)=>a.walk-b.walk);
+  document.getElementById("count").textContent="· "+list.length+"곳";
+  document.getElementById("cards").innerHTML = list.map(m=>{
+    const min=Math.max(...m.items.map(i=>Math.round((1-i.now/i.was)*100)));
+    return '<button class="card" onclick="openSheet('+m.id+')">'
+      +'<h3>'+m.name+'</h3>'
+      +'<div class="meta"><span>🚶 도보 '+m.walk+'분</span><span>🕘 '+m.open+'</span>'
+      +'<span>최대 '+min+'% 할인</span></div>'+badge(m)+'</button>';
+  }).join("") || '<p class="maphint">조건에 맞는 마트가 없어요. 다른 필터를 눌러보세요.</p>';
+}
+document.getElementById("filters").addEventListener("click",e=>{
+  const b=e.target.closest(".chip"); if(!b) return;
+  document.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed","false"));
+  b.setAttribute("aria-pressed","true"); filter=b.dataset.f; renderCards();
+});
+renderCards();
+
+/* ---------- 상세 시트 ---------- */
+const sheet=document.getElementById("sheet");
+const picked=new Set();
+function won(v){ return v.toLocaleString("ko-KR")+"원"; }
+function openSheet(id){
+  const m=MARTS.find(x=>x.id===id); picked.clear();
+  document.getElementById("sheetTitle").textContent=m.name;
+  document.getElementById("sheetMeta").innerHTML=
+    '<span>🚶 도보 '+m.walk+'분</span><span>🕘 마감세일 '+m.open+'</span>';
+  document.getElementById("itemList").innerHTML=m.items.map((i,k)=>{
+    const pct=Math.round((1-i.now/i.was)*100);
+    return '<label class="item"><input type="checkbox" data-k="'+k+'" style="width:20px;height:20px">'
+      +'<div class="thumb">'+i.e+'</div>'
+      +'<div><div class="iname">'+i.n+'</div><div class="ileft">남은 수량 '+i.left+'개</div></div>'
+      +'<div class="price"><div class="was">'+won(i.was)+'</div>'
+      +'<div class="now">'+won(i.now)+' <span class="pct">'+pct+'%</span></div></div></label>';
+  }).join("");
+  const btn=document.getElementById("reserveBtn");
+  btn.className="cta"; btn.textContent="선택한 상품 찜하고 알림받기"; btn.disabled=false;
+  document.getElementById("itemList").onchange=e=>{
+    const k=e.target.dataset.k;
+    e.target.checked?picked.add(k):picked.delete(k);
+    btn.textContent = picked.size ? picked.size+"개 찜하고 알림받기" : "선택한 상품 찜하고 알림받기";
+  };
+  sheet.classList.add("open");
+  map.panTo(new naver.maps.LatLng(m.lat, m.lng));
+}
+function closeSheet(){ sheet.classList.remove("open"); }
+document.getElementById("closeBtn").onclick=closeSheet;
+document.getElementById("reserveBtn").onclick=function(){
+  if(!picked.size){ alert("담고 싶은 상품을 먼저 선택해 주세요."); return; }
+  this.className="cta done";
+  this.textContent="✓ "+picked.size+"개 찜 완료 — 10분 전에 알려드릴게요";
+  this.disabled=true;
+};
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeSheet(); });
+</script>
+</body>
+</html>
