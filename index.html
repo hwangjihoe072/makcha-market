@@ -1,314 +1,732 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>막차마켓 | 충북대 주변 마감세일 지도</title>
-<!-- 네이버 지도 API: 아래 YOUR_CLIENT_ID 를 발급받은 Client ID로 바꿔주세요 -->
-<script src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=23xyiuajjp"></script>
-<style>
-  :root{
-    --ink:#15171c; --sub:#5b6270; --line:#e5e7eb; --bg:#f6f7f9;
-    --accent:#ff5a1f; --accent-dark:#d8430d; --ok:#0f8a52; --warn:#b45309;
-  }
-  *{box-sizing:border-box}
-  html,body{margin:0;padding:0}
-  body{
-    font-family:system-ui,'Apple SD Gothic Neo','Nanum Gothic',sans-serif;
-    color:var(--ink); background:var(--bg); -webkit-text-size-adjust:100%;
-  }
-  header.top{
-    position:sticky; top:0; z-index:1200; background:#fff;
-    border-bottom:1px solid var(--line); padding:10px 16px;
-    display:flex; align-items:center; gap:10px;
-  }
-  .logo{font-weight:800; font-size:18px; letter-spacing:-.4px}
-  .logo span{color:var(--accent)}
-  .tag{font-size:12px; color:var(--sub); margin-left:auto}
-  .clock{
-    font-size:12px; font-weight:700; color:#fff; background:var(--ink);
-    padding:4px 8px; border-radius:999px;
-  }
-  .wrap{max-width:1100px; margin:0 auto; padding:14px 16px 90px}
-  .filters{display:flex; gap:8px; overflow-x:auto; padding:4px 0 10px}
-  .chip{
-    flex:0 0 auto; border:1px solid var(--line); background:#fff; color:var(--sub);
-    padding:8px 14px; border-radius:999px; font-size:13px; font-weight:600; cursor:pointer;
-  }
-  .chip[aria-pressed="true"]{background:var(--ink); color:#fff; border-color:var(--ink)}
-  #map{height:380px; border-radius:14px; border:1px solid var(--line); background:#dfe3e8}
-  .maphint{font-size:12px; color:var(--sub); margin:8px 2px 0}
-  h2{font-size:17px; margin:22px 2px 10px}
-  .count{font-size:13px; color:var(--sub); font-weight:600}
-  .cards{display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
-  .card{
-    background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px;
-    cursor:pointer; text-align:left; font:inherit; color:inherit;
-  }
-  .card:hover{border-color:var(--accent)}
-  .card h3{margin:0 0 4px; font-size:16px}
-  .meta{font-size:13px; color:var(--sub); display:flex; gap:10px; flex-wrap:wrap}
-  .badge{
-    display:inline-block; margin-top:10px; font-size:12px; font-weight:700;
-    color:#fff; background:var(--accent); padding:4px 10px; border-radius:999px;
-  }
-  .badge.soon{background:var(--warn)}
-  .badge.none{background:#9aa1ad}
-  /* 하단 시트 */
-  .sheet{
-    position:fixed; left:0; right:0; bottom:0; z-index:1400; background:#fff;
-    border-radius:18px 18px 0 0; box-shadow:0 -10px 40px rgba(0,0,0,.22);
-    max-height:86vh; overflow-y:auto; transform:translateY(102%);
-    transition:transform .28s ease;
-  }
-  .sheet.open{transform:translateY(0)}
-  .sheet-inner{max-width:720px; margin:0 auto; padding:16px 16px 28px}
-  .sheet-head{display:flex; align-items:flex-start; gap:10px}
-  .sheet-head h3{margin:0; font-size:19px}
-  .close{
-    margin-left:auto; border:1px solid var(--line); background:#fff; border-radius:10px;
-    width:34px; height:34px; font-size:18px; cursor:pointer; color:var(--sub);
-  }
-  .item{display:flex; gap:12px; align-items:center; padding:12px 0; border-top:1px solid var(--line)}
-  .thumb{
-    width:52px; height:52px; border-radius:12px; flex:0 0 auto;
-    display:grid; place-items:center; font-size:24px; background:var(--bg);
-  }
-  .iname{font-weight:700; font-size:15px}
-  .ileft{font-size:12px; color:var(--sub)}
-  .price{margin-left:auto; text-align:right; flex:0 0 auto}
-  .was{font-size:12px; color:#9aa1ad; text-decoration:line-through}
-  .now{font-size:16px; font-weight:800; color:var(--accent-dark)}
-  .pct{font-size:11px; font-weight:700; color:#fff; background:var(--ok); padding:2px 6px; border-radius:6px}
-  .cta{
-    display:block; width:100%; margin-top:16px; border:0; border-radius:12px;
-    background:var(--accent); color:#fff; font-size:16px; font-weight:800;
-    padding:15px; cursor:pointer;
-  }
-  .cta.done{background:var(--ok)}
-  .note{font-size:12px; color:var(--sub); text-align:center; margin-top:10px}
-  footer{padding:20px 16px 40px; text-align:center; font-size:12px; color:var(--sub)}
-  .pill{display:inline-block; font-size:11px; border:1px solid var(--line); background:#fff;
-    border-radius:999px; padding:3px 8px; color:var(--sub)}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>막차마켓 - AI 기반 마감 랜덤꾸러미 플랫폼</title>
+  <!-- 네이버 지도 API (기존 발급 키 적용 + CARTO 백업 지원) -->
+  <script src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=23yiuajjp"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    :root {
+      --primary: #ff5a1f;
+      --primary-dark: #e04812;
+      --primary-light: #fff3ed;
+      --ai-purple: #5b4bff;
+      --ai-light: #f2f0ff;
+      --green: #12b886;
+      --bg: #f7f8fa;
+      --card: #ffffff;
+      --text: #191f28;
+      --sub: #6b7684;
+      --border: #e5e8eb;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Apple SD Gothic Neo", sans-serif; }
+    body { background: var(--bg); color: var(--text); max-width: 480px; margin: 0 auto; min-height: 100vh; position: relative; box-shadow: 0 0 24px rgba(0,0,0,0.08); padding-bottom: 80px; }
+
+    /* 상단 헤더 */
+    header { background: #fff; padding: 12px 16px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); }
+    .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .logo { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; display: flex; align-items: center; gap: 6px; }
+    .logo span { color: var(--primary); }
+    .logo-badge { font-size: 11px; background: var(--ai-light); color: var(--ai-purple); padding: 3px 7px; border-radius: 6px; font-weight: 700; }
+    .demo-toggle { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; background: #fff4e6; color: #d9480f; padding: 5px 10px; border-radius: 20px; border: 1px solid #ffd8a8; cursor: pointer; }
+    .demo-toggle input { accent-color: var(--primary); cursor: pointer; }
+
+    /* 모드 전환 탭 (소비자 / 사장님 AI) */
+    .mode-tabs { display: grid; grid-template-columns: 1fr 1fr; background: #f1f3f5; padding: 4px; border-radius: 10px; gap: 4px; }
+    .mode-tab { border: none; background: transparent; padding: 9px 0; font-size: 13px; font-weight: 700; color: var(--sub); border-radius: 8px; cursor: pointer; transition: 0.15s; }
+    .mode-tab.active { background: #fff; color: var(--text); box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+    .mode-tab.active.owner { color: var(--ai-purple); }
+
+    /* 위치 및 AI 배너 */
+    .sub-bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; background: #fff; font-size: 12px; color: var(--sub); border-bottom: 1px solid var(--border); }
+    .ai-banner { margin: 12px 16px 8px; padding: 11px 14px; background: linear-gradient(135deg, #5b4bff 0%, #3b2fd9 100%); color: #fff; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; font-size: 12px; box-shadow: 0 4px 12px rgba(91,75,255,0.2); }
+    .ai-banner b { font-size: 13px; display: block; margin-bottom: 2px; }
+
+    /* 필터 칩 */
+    .chips { display: flex; gap: 6px; overflow-x: auto; padding: 8px 16px; scrollbar-width: none; }
+    .chips::-webkit-scrollbar { display: none; }
+    .chip { border: 1px solid var(--border); background: #fff; padding: 7px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; color: var(--sub); white-space: nowrap; cursor: pointer; }
+    .chip.active { background: var(--text); color: #fff; border-color: var(--text); }
+
+    /* 지도 영역 */
+    .map-wrap { margin: 6px 16px 12px; border-radius: 14px; overflow: hidden; border: 1px solid var(--border); position: relative; height: 230px; background: #e9ecef; }
+    #map { width: 100%; height: 100%; }
+    .map-hint { font-size: 12px; color: var(--sub); padding: 0 16px 10px; }
+    .map-hint b { color: var(--primary); }
+
+    /* 매장 리스트 */
+    .sec-title { padding: 8px 16px; font-size: 16px; font-weight: 800; display: flex; justify-content: space-between; align-items: center; }
+    .sec-title span { font-size: 12px; font-weight: 600; color: var(--sub); }
+    .store-list { padding: 0 16px; display: flex; flex-direction: column; gap: 12px; }
+    .store-card { background: #fff; border-radius: 14px; padding: 15px; border: 1px solid var(--border); cursor: pointer; transition: transform 0.12s, box-shadow 0.12s; position: relative; }
+    .store-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.06); }
+    .store-card.ad-card { border: 1.5px solid #ffd8a8; background: linear-gradient(180deg, #fffdf9 0%, #ffffff 100%); }
+    .store-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+    .store-name { font-size: 16px; font-weight: 800; display: flex; align-items: center; gap: 6px; }
+    .ad-badge { font-size: 10px; font-weight: 700; color: #f76707; background: #fff4e6; border: 1px solid #ffd8a8; padding: 2px 5px; border-radius: 4px; }
+    .status-badge { font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 6px; }
+    .status-live { background: var(--primary-light); color: var(--primary); }
+    .status-soon { background: #fff9db; color: #e67700; }
+    .status-off { background: #f1f3f5; color: #868e96; }
+
+    .store-meta { font-size: 12px; color: var(--sub); margin-bottom: 10px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .ai-pred-tag { font-size: 11px; color: var(--ai-purple); background: var(--ai-light); padding: 2px 6px; border-radius: 4px; font-weight: 700; }
+
+    /* 럭키밀 스타일 꾸러미 박스 프리뷰 */
+    .bag-preview { background: #f8f9fa; border-radius: 10px; padding: 11px 12px; display: flex; justify-content: space-between; align-items: center; border: 1px dashed #dee2e6; }
+    .bag-info { display: flex; align-items: center; gap: 10px; }
+    .bag-emoji { font-size: 26px; background: #fff; width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.04); }
+    .bag-title { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+    .bag-desc { font-size: 11px; color: var(--sub); }
+    .bag-price { text-align: right; }
+    .price-was { font-size: 11px; color: #adb5bd; text-decoration: line-through; }
+    .price-now { font-size: 16px; font-weight: 800; color: var(--primary); }
+    .discount-pct { font-size: 12px; font-weight: 800; color: #fff; background: var(--primary); padding: 2px 6px; border-radius: 5px; margin-right: 4px; }
+    .left-pill { font-size: 11px; font-weight: 700; color: #e03131; margin-top: 3px; }
+
+    /* 바텀시트 모달 (꾸러미 상세 예약) */
+    .sheet-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200; display: none; align-items: flex-end; justify-content: center; }
+    .sheet-backdrop.open { display: flex; }
+    .sheet { background: #fff; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 20px 18px 26px; max-height: 85vh; overflow-y: auto; animation: slideUp 0.2s ease-out; }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .sheet-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .sheet-close { border: none; background: #f1f3f5; width: 32px; height: 32px; border-radius: 50%; font-size: 16px; cursor: pointer; }
+    .safety-box { background: #ebfbee; border: 1px solid #b2f2bb; color: #2b8a3e; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+    .pack-card { border: 1.5px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 10px; cursor: pointer; transition: 0.15s; }
+    .pack-card.selected { border-color: var(--primary); background: #fffaf8; }
+    .pack-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+    .pack-tag { font-size: 11px; background: #f1f3f5; color: #495057; padding: 3px 8px; border-radius: 6px; }
+    .reserve-btn { width: 100%; border: none; background: var(--primary); color: #fff; font-size: 15px; font-weight: 800; padding: 15px; border-radius: 12px; cursor: pointer; margin-top: 8px; }
+    .reserve-btn.done { background: var(--green); }
+
+    /* 사장님(점주) AI 예측 화면 스타일 */
+    #ownerView { display: none; padding: 14px 16px; }
+    .owner-hero { background: linear-gradient(135deg, #1f1c3d 0%, #342e6b 100%); color: #fff; padding: 18px; border-radius: 16px; margin-bottom: 14px; }
+    .owner-hero h2 { font-size: 17px; margin-bottom: 4px; }
+    .owner-hero p { font-size: 12px; color: #cbd5e1; }
+    .StoreSelectBar { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 14px; padding-bottom: 4px; }
+    .store-pill { border: 1px solid var(--border); background: #fff; padding: 7px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+    .store-pill.active { background: var(--ai-purple); color: #fff; border-color: var(--ai-purple); }
+
+    .ai-one-card { background: #fff; border: 2px solid var(--ai-purple); border-radius: 16px; padding: 18px; margin-bottom: 14px; box-shadow: 0 8px 20px rgba(91,75,255,0.1); }
+    .ai-card-badge { display: inline-block; background: var(--ai-light); color: var(--ai-purple); font-size: 11px; font-weight: 800; padding: 4px 8px; border-radius: 6px; margin-bottom: 8px; }
+    .ai-card-title { font-size: 17px; font-weight: 800; margin-bottom: 6px; line-height: 1.35; }
+    .ai-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; background: #f8f9fa; padding: 12px; border-radius: 12px; margin: 12px 0; text-align: center; }
+    .ai-metric-val { font-size: 16px; font-weight: 800; color: var(--ai-purple); }
+    .ai-metric-lbl { font-size: 11px; color: var(--sub); margin-top: 2px; }
+    .ai-approve-btn { width: 100%; border: none; background: var(--ai-purple); color: #fff; padding: 14px; border-radius: 12px; font-size: 14px; font-weight: 800; cursor: pointer; }
+    .ai-approve-btn.approved { background: var(--green); }
+
+    .timeline-box { background: #fff; border-radius: 14px; padding: 16px; border: 1px solid var(--border); margin-bottom: 14px; }
+    .tl-item { display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px dashed var(--border); font-size: 12px; }
+    .tl-item:last-child { border-bottom: none; }
+    .tl-time { font-weight: 800; color: var(--ai-purple); min-width: 44px; }
+    .roi-box { background: #fff; border-radius: 14px; padding: 16px; border: 1px solid var(--border); }
+    .roi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+    .roi-card { background: #f8f9fa; padding: 12px; border-radius: 10px; }
+    .roi-card b { font-size: 16px; color: var(--primary); display: block; margin-top: 2px; }
+
+    footer { text-align: center; font-size: 11px; color: var(--sub); padding: 24px 16px 12px; line-height: 1.5; }
+  </style>
 </head>
 <body>
 
-<header class="top">
-  <div class="logo">막차<span>마켓</span></div>
-  <div class="clock" id="clock">--:--</div>
-  <div class="tag">충북대 개신캠퍼스 주변</div>
+<header>
+  <div class="header-top">
+    <div class="logo">
+      막차<span>마켓</span>
+      <span class="logo-badge">AI 골든타임</span>
+    </div>
+    <label class="demo-toggle" title="체크하면 발표 시간과 무관하게 모든 매장이 마감세일 골든타임으로 표시됩니다">
+      <input type="checkbox" id="demoSwitch" checked />
+      🔥 발표 시연모드 ON
+    </label>
+  </div>
+  <div class="mode-tabs">
+    <button class="mode-tab active" id="tabConsumer" onclick="switchMode('consumer')">👤 소비자 화면 (랜덤꾸러미)</button>
+    <button class="mode-tab owner" id="tabOwner" onclick="switchMode('owner')">🏪 사장님 화면 (AI 예측)</button>
+  </div>
 </header>
 
-<main class="wrap">
-  <div class="filters" id="filters">
-    <button class="chip" data-f="all" aria-pressed="true">전체</button>
-    <button class="chip" data-f="now" aria-pressed="false">지금 세일중</button>
-    <button class="chip" data-f="walk" aria-pressed="false">도보 10분</button>
-    <button class="chip" data-f="fresh" aria-pressed="false">신선식품</button>
-    <button class="chip" data-f="lunch" aria-pressed="false">도시락·간편식</button>
+<!-- ================= [1] 소비자 화면 ================= -->
+<div id="consumerView">
+  <div class="sub-bar">
+    <span>📍 충북대학교 개신캠퍼스 주변</span>
+    <span id="clockText">현재 시각 --:--</span>
   </div>
 
-  <div id="map"></div>
-  <p class="maphint">지도의 <b>주황색 핀</b>을 누르면 그 마트가 지금 마감세일 중인 상품이 아래에서 열립니다.</p>
+  <div class="ai-banner">
+    <div>
+      <b>🤖 AI 골든타임 사전 예측 가동 중</b>
+      <span>마감 직전 늦은 등록 NO! 하교 동선에 맞춘 선제적 랜덤꾸러미</span>
+    </div>
+    <span style="font-size:22px;">🎁</span>
+  </div>
 
-  <h2>주변 마트 <span class="count" id="count"></span></h2>
-  <div class="cards" id="cards"></div>
-</main>
+  <div class="chips">
+    <button class="chip active" onclick="setFilter('all', this)">전체 (5)</button>
+    <button class="chip" onclick="setFilter('live', this)">🔥 지금 골든타임</button>
+    <button class="chip" onclick="setFilter('bakery', this)">🥐 베이커리·디저트 꾸러미</button>
+    <button class="chip" onclick="setFilter('banchan', this)">🍱 반찬·집밥 꾸러미</button>
+    <button class="chip" onclick="setFilter('walk5', this)">🚶 도보 6분 이내</button>
+  </div>
 
-<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
-  <div class="sheet-inner">
+  <div class="map-wrap">
+    <div id="map"></div>
+  </div>
+  <p class="map-hint">지도의 <b>주황색 핀</b> 또는 아래 카드를 누르면 <b>럭키 랜덤꾸러미</b>를 예약할 수 있어요.</p>
+
+  <div class="sec-title">
+    충북대 주변 마감 꾸러미 매장 <span id="storeCount">5곳</span>
+  </div>
+  <div class="store-list" id="storeList"></div>
+</div>
+
+<!-- ================= [2] 사장님(AI 예측) 화면 ================= -->
+<div id="ownerView">
+  <div class="owner-hero">
+    <h2>🤖 점주용 AI 골든타임 매니저</h2>
+    <p>바쁜 마감 시간, 일일이 수동 등록하지 마세요. 추천 카드 한 장으로 끝납니다.</p>
+  </div>
+
+  <div class="StoreSelectBar" id="ownerStoreTabs"></div>
+
+  <div class="ai-one-card" id="ownerAiCard"></div>
+
+  <div class="timeline-box">
+    <div style="font-size:14px; font-weight:800; margin-bottom:8px;">⏱️ 막차마켓 AI 선제적 운영 프로세스</div>
+    <div class="tl-item">
+      <div class="tl-time">18:00</div>
+      <div><b>AI 잔여 재고 사전 예측</b><br>요일·날씨·시간대별 판매 데이터 기반 마감 시점 잉여량 도출</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-time">18:30</div>
+      <div><b>골든타임 할인 시점 & 할인율 제안</b><br>하교·퇴근 동선에 맞춰 19:00 오픈 및 최적 할인율(30~40%) 자동 추천</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-time">19:00</div>
+      <div><b>소비자 앱에 '랜덤꾸러미' 노출 및 픽업 예약</b><br>단품 등록 번거로움 없이 랜덤박스 형태로 빠른 소진 유도</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-time">20:30</div>
+      <div><b>완전 판매 & 판매 데이터 자가 학습</b><br>소진 속도 데이터를 재축적하여 다음 날 예측 정확도 고도화</div>
+    </div>
+  </div>
+
+  <div class="roi-box">
+    <div style="font-size:14px; font-weight:800;">📊 우리 매장 월간 예상 경제성 리포트 (기준 시나리오)</div>
+    <p style="font-size:11px; color:var(--sub); margin-top:2px;">일 생산 80개 · AI 도입 후 폐기 30% 감소 · 할인 소진율 70% 기준</p>
+    <div class="roi-grid">
+      <div class="roi-card">
+        <span style="font-size:11px; color:var(--sub);">월 마감꾸러미 회수액</span>
+        <b>+270,000원</b>
+      </div>
+      <div class="roi-card">
+        <span style="font-size:11px; color:var(--sub);">AI 발주 조정 원가절감</span>
+        <b>+103,000원</b>
+      </div>
+      <div class="roi-card">
+        <span style="font-size:11px; color:var(--sub);">구독료(9,900원) 차감 순익</span>
+        <b style="color:var(--green);">월 +351,000원</b>
+      </div>
+      <div class="roi-card">
+        <span style="font-size:11px; color:var(--sub);">초기 3개월 중개수수료</span>
+        <b style="color:var(--ai-purple);">0% (전액 면제)</b>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 바텀시트 모달 ================= -->
+<div class="sheet-backdrop" id="sheetBackdrop" onclick="closeSheet(event)">
+  <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-head">
       <div>
-        <h3 id="sheetTitle">마트</h3>
-        <div class="meta" id="sheetMeta"></div>
+        <div id="sheetBadges" style="margin-bottom:4px;"></div>
+        <h3 id="sheetTitle" style="font-size:18px; font-weight:800;">매장명</h3>
+        <div id="sheetMeta" style="font-size:12px; color:var(--sub); margin-top:2px;"></div>
       </div>
-      <button class="close" id="closeBtn" aria-label="닫기">×</button>
+      <button class="sheet-close" onclick="closeSheet()">✕</button>
     </div>
-    <div id="itemList"></div>
-    <button class="cta" id="reserveBtn">선택한 상품 찜하고 알림받기</button>
-    <p class="note">MVP 시연용 화면입니다. 실제 재고·가격은 점포 사정에 따라 달라질 수 있습니다.</p>
+
+    <div class="safety-box">
+      🛡️ <b>식품 안전 보장:</b> 당일 생산·당일 소비기한 확인 완료 상품만 꾸러미로 제공됩니다.
+    </div>
+
+    <div id="sheetPacks"></div>
+
+    <button class="reserve-btn" id="reserveBtn" onclick="reservePack()">
+      🎁 꾸러미 픽업 예약 & 골든타임 알림받기
+    </button>
+    <p style="font-size:11px; color:var(--sub); text-align:center; margin-top:10px;">
+      랜덤꾸러미 특성상 당일 잔여 재고에 따라 세부 구성품이 달라질 수 있습니다.
+    </p>
   </div>
 </div>
 
 <footer>
-  막차마켓 MVP · 충북대학교 캡스톤디자인 프로토타입<br>
-  <span class="pill">표시된 마트·상품·가격은 시연용 예시 데이터입니다</span>
+  <b>막차마켓 MVP</b> · 충북대학교 캡스톤디자인 프로토타입<br>
+  AI 기반 선제적 마감 예측 & 랜덤꾸러미 픽업 서비스
 </footer>
 
-
 <script>
-/* ---------- 데이터 (시연용 예시) ---------- */
-const MARTS = [
-  { id:1, name:"하나로마트 개신점", lat:36.6305, lng:127.4530, walk:5, open:"21:30~22:30",
-    items:[
-      {n:"삼겹살 300g", e:"🥩", was:11900, now:6900, left:3, c:"fresh"},
-      {n:"모둠초밥 12p", e:"🍣", was:12900, now:7700, left:2, c:"lunch"},
-      {n:"샐러드 믹스", e:"🥗", was:4500, now:2200, left:6, c:"fresh"}
-    ]},
-  { id:2, name:"GS더프레시 사직점", lat:36.6338, lng:127.4612, walk:12, open:"22:00~23:00",
-    items:[
-      {n:"불고기 도시락", e:"🍱", was:5900, now:3500, left:4, c:"lunch"},
-      {n:"우유 1L", e:"🥛", was:3200, now:1900, left:8, c:"fresh"},
-      {n:"크림빵 2입", e:"🍞", was:2800, now:1400, left:5, c:"lunch"}
-    ]},
-  { id:3, name:"롯데마트 청주점", lat:36.6243, lng:127.4669, walk:22, open:"21:00~22:00",
-    items:[
-      {n:"손질 고등어 2팩", e:"🐟", was:9800, now:4900, left:2, c:"fresh"},
-      {n:"딸기 500g", e:"🍓", was:12900, now:8900, left:3, c:"fresh"},
-      {n:"치킨 한마리", e:"🍗", was:13900, now:8900, left:1, c:"lunch"}
-    ]},
-  { id:4, name:"이마트 에브리데이 분평점", lat:36.6192, lng:127.4598, walk:28, open:"21:30~22:30",
-    items:[
-      {n:"김밥 2줄", e:"🍙", was:4600, now:2300, left:7, c:"lunch"},
-      {n:"애호박·버섯 묶음", e:"🥬", was:5400, now:2700, left:4, c:"fresh"}
-    ]},
-  { id:5, name:"CU 충대정문점", lat:36.6279, lng:127.4551, walk:3, open:"23:00~24:00",
-    items:[
-      {n:"유통기한 임박 삼각김밥", e:"🍘", was:1500, now:750, left:9, c:"lunch"},
-      {n:"샌드위치", e:"🥪", was:3900, now:1900, left:3, c:"lunch"}
-    ]},
-  { id:6, name:"농협 하나로 복대점", lat:36.6411, lng:127.4451, walk:35, open:"20:30~21:30",
-    items:[
-      {n:"한우 국거리 400g", e:"🍲", was:18900, now:11900, left:2, c:"fresh"},
-      {n:"방울토마토 1kg", e:"🍅", was:7900, now:4400, left:5, c:"fresh"}
-    ]}
-];
-const CBNU = [36.6284, 127.4565];
+  // 충북대 인근 5개 실제 타깃 매장 + 럭키밀 스타일 랜덤박스 데이터
+  const STORES = [
+    {
+      id: 1,
+      name: "프로마치 (Fromachi)",
+      category: "bakery",
+      area: "충북대 정문·개신동",
+      lat: 36.6322,
+      lng: 127.4582,
+      walk: 4,
+      open: "19:00~20:30",
+      isAd: true,
+      aiPredictTime: "18:30 AI 예측 완료",
+      aiRemainCount: 4,
+      aiReason: "목요일 오후 강수·하교 유동인구 감소 반영 → 19:00 골든타임 30% 선제 할인 추천",
+      packs: [
+        {
+          title: "프로마치 시그니처 빵 랜덤박스",
+          emoji: "🥐",
+          was: 10500,
+          now: 7000,
+          left: 4,
+          desc: "소금빵 1개 확정 포함 + 당일 구운 베이커리 2~3종 랜덤 구성",
+          tags: ["소금빵 확정 포함", "구움과자·빵 3~4개입", "당일 생산·당일 소비기한"]
+        },
+        {
+          title: "하교길 미니 소금빵 꾸러미 (발표 시나리오)",
+          emoji: "🥖",
+          was: 3500,
+          now: 2500,
+          left: 4,
+          desc: "발표자료 표준 시나리오: 18:30 AI 잔여 4개 예측 → 19:00 약 30% 할인",
+          tags: ["AI 골든타임 추천가", "정상가 3,500원 → 2,500원", "정문 도보 4분"]
+        }
+      ]
+    },
+    {
+      id: 2,
+      name: "올인베이커리 청주충북대점",
+      category: "bakery",
+      area: "충북대 중문 인근",
+      lat: 36.6338,
+      lng: 127.4598,
+      walk: 5,
+      open: "19:30~21:00",
+      isAd: false,
+      aiPredictTime: "18:30 AI 예측 완료",
+      aiRemainCount: 5,
+      aiReason: "일일 생산량 대비 18시 재고율 18% 감지 → 19:30 꾸러미 35% 할인 추천",
+      packs: [
+        {
+          title: "올인 든든 빵 4종 랜덤꾸러미",
+          emoji: "🥯",
+          was: 12000,
+          now: 7800,
+          left: 5,
+          desc: "단팥빵·소보로·크림빵·조리빵 중 당일 인기 베이커리 4종 랜덤팩",
+          tags: ["베이커리 4종 랜덤", "자취생 아침·간식용", "당일 22시 소비기한"]
+        }
+      ]
+    },
+    {
+      id: 3,
+      name: "우븐 (Woven)",
+      category: "bakery",
+      area: "충북대 중문·사창동",
+      lat: 36.6345,
+      lng: 127.4612,
+      walk: 6,
+      open: "19:00~20:30",
+      isAd: false,
+      aiPredictTime: "18:00 AI 예측 완료",
+      aiRemainCount: 3,
+      aiReason: "디저트·구움과류 마감 잔여 3세트 예측 → 19:00 33% 할인 골든타임 오픈",
+      packs: [
+        {
+          title: "우븐 구움과자 & 베이커리 럭키박스",
+          emoji: "🧁",
+          was: 13500,
+          now: 8900,
+          left: 3,
+          desc: "휘낭시에·스콘·소금빵 등 우븐 당일 베이커리 3~4종 시크릿 꾸러미",
+          tags: ["구움과자·스콘 3~4종", "카페 디저트 꾸러미", "당일 생산 확인"]
+        }
+      ]
+    },
+    {
+      id: 4,
+      name: "제제커베",
+      category: "bakery",
+      area: "충북대 서문·개신동",
+      lat: 36.6295,
+      lng: 127.4525,
+      walk: 7,
+      open: "19:30~21:00",
+      isAd: false,
+      aiPredictTime: "18:30 AI 예측 완료",
+      aiRemainCount: 3,
+      aiReason: "서문 하교 시간대 유동 데이터 기반 19:30 35% 선제 할인 추천",
+      packs: [
+        {
+          title: "제제커베 커피&베이커리 마감 랜덤세트",
+          emoji: "🥨",
+          was: 11000,
+          now: 7200,
+          left: 3,
+          desc: "당일 만든 베이커리·케이크 조각·쿠키류 중 3종 랜덤 구성",
+          tags: ["베이커리·디저트 3종", "서문 자취방 하교 동선", "당일 소비기한 보장"]
+        }
+      ]
+    },
+    {
+      id: 5,
+      name: "웰빙앤찬 (반찬가게)",
+      category: "banchan",
+      area: "개신동 자취촌 인근",
+      lat: 36.6278,
+      lng: 127.4510,
+      walk: 8,
+      open: "18:30~20:00",
+      isAd: true,
+      aiPredictTime: "17:30 AI 예측 완료",
+      aiRemainCount: 4,
+      aiReason: "당일 조리 반찬 잔여량 예측 → 저녁 식사 준비 시간대(18:30) 40% 할인 추천",
+      packs: [
+        {
+          title: "자취생 집밥 반찬 5종 랜덤박스",
+          emoji: "🍱",
+          was: 15000,
+          now: 8900,
+          left: 4,
+          desc: "메인 고기/생선반찬 1종 + 나물·조림·김치류 4종 등 오늘 만든 반찬 5종 꾸러미",
+          tags: ["메인반찬 1 + 밑반찬 4", "1인가구 3~4끼 해결", "당일 조리·위생포장"]
+        },
+        {
+          title: "오늘의 국·찌개 + 반찬 2종 실속꾸러미",
+          emoji: "🍲",
+          was: 10000,
+          now: 6500,
+          left: 2,
+          desc: "당일 끓인 수제 국/찌개 1팩 + 어울리는 밑반찬 2종 랜덤 구성",
+          tags: ["수제 국/찌개 포함", "저녁 한 끼 완성", "당일 소비 권장"]
+        }
+      ]
+    }
+  ];
 
-/* ---------- 시계 / 세일 시간대 판정 ---------- */
-function nowMin(){ const d=new Date(); return d.getHours()*60+d.getMinutes(); }
-function toMin(s){ const [h,m]=s.split(":").map(Number); return h*60+m; }
-function status(m){
-  const [s,e]=m.open.split("~"); const n=nowMin();
-  const st=toMin(s), en=toMin(e)===0?1440:toMin(e);
-  if(n>=st && n<=en) return "now";
-  if(st-n>0 && st-n<=90) return "soon";
-  return "later";
-}
-function badge(m){
-  const s=status(m);
-  if(s==="now") return '<span class="badge">🔥 지금 세일중 · '+m.items.length+'개</span>';
-  if(s==="soon") return '<span class="badge soon">⏰ '+m.open.split("~")[0]+' 세일 시작</span>';
-  return '<span class="badge none">오늘 '+m.open+' 예정</span>';
-}
-function tick(){
-  const d=new Date();
-  document.getElementById("clock").textContent =
-    String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
-}
-tick(); setInterval(tick, 10000);
+  let currentFilter = "all";
+  let activeStore = null;
+  let selectedPackIdx = 0;
+  let ownerSelectedId = 1;
+  let mapInstance = null;
+  let markers = [];
 
-/* ---------- 지도 ---------- */
-// 네이버 API가 로드되지 않았을 때(키 미설정/도메인 미등록) 안내 표시
-if(typeof naver==="undefined" || !naver.maps){
-  document.getElementById("map").innerHTML =
-    '<div style="height:100%;display:grid;place-items:center;text-align:center;padding:20px;color:#5b6270;font-size:14px;line-height:1.7">'
-   +'<div><b style="color:#15171c;font-size:15px">네이버 지도 Client ID가 설정되지 않았습니다</b><br>'
-   +'HTML 상단 <code>YOUR_CLIENT_ID</code> 부분을 발급받은 키로 바꾸고,<br>'
-   +'네이버 클라우드 플랫폼에 배포 주소를 Web 서비스 URL로 등록해 주세요.</div></div>';
-  throw new Error("naver maps not loaded");
-}
+  // 시연 모드 및 시간 판정
+  function getStoreStatus(store) {
+    const isDemo = document.getElementById("demoSwitch").checked;
+    if (isDemo) return "live"; // 발표 시연모드일 때는 항상 골든타임 활성
+    const now = new Date();
+    const curMin = now.getHours() * 60 + now.getMinutes();
+    const [startStr, endStr] = store.open.split("~");
+    const [sh, sm] = startStr.split(":").map(Number);
+    const [eh, em] = endStr.split(":").map(Number);
+    const startMin = sh * 60 + sm;
+    const endMin = eh * 60 + em;
+    if (curMin >= startMin && curMin <= endMin) return "live";
+    if (curMin >= startMin - 90 && curMin < startMin) return "soon";
+    return "off";
+  }
 
-const map = new naver.maps.Map("map", {
-  center: new naver.maps.LatLng(CBNU[0], CBNU[1]),
-  zoom: 14,
-  scrollWheel: false,
-  zoomControl: true,
-  zoomControlOptions: { position: naver.maps.Position.TOP_RIGHT }
-});
+  // 시계 업데이트
+  function updateClock() {
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, "0");
+    const mm = String(now.getMinutes()).padStart(2, "0");
+    document.getElementById("clockText").textContent = `현재 시각 ${hh}:${mm}`;
+  }
 
-new naver.maps.Marker({
-  position: new naver.maps.LatLng(CBNU[0], CBNU[1]),
-  map: map,
-  icon: { content:
-    '<div style="background:#15171c;color:#fff;font-size:11px;font-weight:700;padding:5px 9px;border-radius:999px;white-space:nowrap">🎓 충북대학교</div>',
-    anchor: new naver.maps.Point(45, 12) }
-});
+  // 지도 초기화 (네이버 지도 우선, 인증 실패 시 CARTO 오픈스트리트맵 자동 폴백)
+  function initMap() {
+    const centerLat = 36.6315;
+    const centerLng = 127.4565;
 
-const markers = {};
-function pinHtml(m){
-  const s=status(m);
-  const col = s==="now" ? "#ff5a1f" : (s==="soon" ? "#b45309" : "#9aa1ad");
-  const n = s==="now" ? m.items.length : "";
-  return '<div style="text-align:center">'
-    +'<div style="background:'+col+';color:#fff;font-size:12px;font-weight:800;padding:6px 10px;'
-    +'border-radius:12px;box-shadow:0 3px 10px rgba(0,0,0,.3);white-space:nowrap">'
-    +(n?'🔥 '+n+'개 ':'')+m.name.replace(/ .*$/,'')+'</div>'
-    +'<div style="width:0;height:0;border:6px solid transparent;border-top-color:'+col+';margin:0 auto"></div></div>';
-}
-MARTS.forEach(m=>{
-  const mk = new naver.maps.Marker({
-    position: new naver.maps.LatLng(m.lat, m.lng),
-    map: map,
-    icon: { content: pinHtml(m), anchor: new naver.maps.Point(50, 44) }
-  });
-  naver.maps.Event.addListener(mk, "click", ()=>openSheet(m.id));
-  markers[m.id]=mk;
-});
+    if (window.naver && window.naver.maps) {
+      try {
+        mapInstance = new naver.maps.Map("map", {
+          center: new naver.maps.LatLng(centerLat, centerLng),
+          zoom: 15
+        });
+        renderNaverMarkers();
+        return;
+      } catch (e) {
+        console.warn("Naver map fallback to Leaflet:", e);
+      }
+    }
+    initLeafletFallback(centerLat, centerLng);
+  }
 
-/* ---------- 목록 ---------- */
-let filter="all";
-function pass(m){
-  if(filter==="all") return true;
-  if(filter==="now") return status(m)==="now";
-  if(filter==="walk") return m.walk<=10;
-  return m.items.some(i=>i.c===filter);
-}
-function renderCards(){
-  const list=MARTS.filter(pass).sort((a,b)=>a.walk-b.walk);
-  document.getElementById("count").textContent="· "+list.length+"곳";
-  document.getElementById("cards").innerHTML = list.map(m=>{
-    const min=Math.max(...m.items.map(i=>Math.round((1-i.now/i.was)*100)));
-    return '<button class="card" onclick="openSheet('+m.id+')">'
-      +'<h3>'+m.name+'</h3>'
-      +'<div class="meta"><span>🚶 도보 '+m.walk+'분</span><span>🕘 '+m.open+'</span>'
-      +'<span>최대 '+min+'% 할인</span></div>'+badge(m)+'</button>';
-  }).join("") || '<p class="maphint">조건에 맞는 마트가 없어요. 다른 필터를 눌러보세요.</p>';
-}
-document.getElementById("filters").addEventListener("click",e=>{
-  const b=e.target.closest(".chip"); if(!b) return;
-  document.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed","false"));
-  b.setAttribute("aria-pressed","true"); filter=b.dataset.f; renderCards();
-});
-renderCards();
+  function renderNaverMarkers() {
+    if (!mapInstance || !(window.naver && window.naver.maps)) return;
+    markers.forEach(m => m.setMap(null));
+    markers = [];
 
-/* ---------- 상세 시트 ---------- */
-const sheet=document.getElementById("sheet");
-const picked=new Set();
-function won(v){ return v.toLocaleString("ko-KR")+"원"; }
-function openSheet(id){
-  const m=MARTS.find(x=>x.id===id); picked.clear();
-  document.getElementById("sheetTitle").textContent=m.name;
-  document.getElementById("sheetMeta").innerHTML=
-    '<span>🚶 도보 '+m.walk+'분</span><span>🕘 마감세일 '+m.open+'</span>';
-  document.getElementById("itemList").innerHTML=m.items.map((i,k)=>{
-    const pct=Math.round((1-i.now/i.was)*100);
-    return '<label class="item"><input type="checkbox" data-k="'+k+'" style="width:20px;height:20px">'
-      +'<div class="thumb">'+i.e+'</div>'
-      +'<div><div class="iname">'+i.n+'</div><div class="ileft">남은 수량 '+i.left+'개</div></div>'
-      +'<div class="price"><div class="was">'+won(i.was)+'</div>'
-      +'<div class="now">'+won(i.now)+' <span class="pct">'+pct+'%</span></div></div></label>';
-  }).join("");
-  const btn=document.getElementById("reserveBtn");
-  btn.className="cta"; btn.textContent="선택한 상품 찜하고 알림받기"; btn.disabled=false;
-  document.getElementById("itemList").onchange=e=>{
-    const k=e.target.dataset.k;
-    e.target.checked?picked.add(k):picked.delete(k);
-    btn.textContent = picked.size ? picked.size+"개 찜하고 알림받기" : "선택한 상품 찜하고 알림받기";
-  };
-  sheet.classList.add("open");
-  map.panTo(new naver.maps.LatLng(m.lat, m.lng));
-}
-function closeSheet(){ sheet.classList.remove("open"); }
-document.getElementById("closeBtn").onclick=closeSheet;
-document.getElementById("reserveBtn").onclick=function(){
-  if(!picked.size){ alert("담고 싶은 상품을 먼저 선택해 주세요."); return; }
-  this.className="cta done";
-  this.textContent="✓ "+picked.size+"개 찜 완료 — 10분 전에 알려드릴게요";
-  this.disabled=true;
-};
-document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeSheet(); });
+    STORES.forEach(store => {
+      const st = getStoreStatus(store);
+      const bg = st === "live" ? "#ff5a1f" : st === "soon" ? "#f59f00" : "#868e96";
+      const pack = store.packs[0];
+      const discount = Math.round((1 - pack.now / pack.was) * 100);
+
+      const marker = new naver.maps.Marker({
+        position: new naver.maps.LatLng(store.lat, store.lng),
+        map: mapInstance,
+        icon: {
+          content: `
+            <div style="background:${bg}; color:#fff; padding:5px 9px; border-radius:18px; font-size:11px; font-weight:800; box-shadow:0 3px 8px rgba(0,0,0,0.25); white-space:nowrap; border:2px solid #fff;">
+              ${pack.emoji} ${store.name.split(" ")[0]} -${discount}%
+            </div>`,
+          anchor: new naver.maps.Point(40, 15)
+        }
+      });
+      naver.maps.Event.addListener(marker, "click", () => openSheet(store.id));
+      markers.push(marker);
+    });
+  }
+
+  function initLeafletFallback(lat, lng) {
+    const lmap = L.map("map").setView([lat, lng], 15);
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+      attribution: "&copy; OpenStreetMap"
+    }).addTo(lmap);
+
+    STORES.forEach(store => {
+      const pack = store.packs[0];
+      const discount = Math.round((1 - pack.now / pack.was) * 100);
+      const icon = L.divIcon({
+        className: "",
+        html: `<div style="background:#ff5a1f; color:#fff; padding:4px 8px; border-radius:14px; font-size:11px; font-weight:800; white-space:nowrap; border:2px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,0.2);">${pack.emoji} ${store.name.split(" ")[0]} -${discount}%</div>`
+      });
+      L.marker([store.lat, store.lng], { icon }).addTo(lmap).on("click", () => openSheet(store.id));
+    });
+  }
+
+  // 매장 카드 렌더링
+  function renderStores() {
+    const listEl = document.getElementById("storeList");
+    const filtered = STORES.filter(s => {
+      const st = getStoreStatus(s);
+      if (currentFilter === "live") return st === "live";
+      if (currentFilter === "bakery") return s.category === "bakery";
+      if (currentFilter === "banchan") return s.category === "banchan";
+      if (currentFilter === "walk5") return s.walk <= 6;
+      return true;
+    }).sort((a, b) => (b.isAd - a.isAd) || (a.walk - b.walk));
+
+    document.getElementById("storeCount").textContent = `${filtered.length}곳`;
+
+    listEl.innerHTML = filtered.map(store => {
+      const st = getStoreStatus(store);
+      const pack = store.packs[0];
+      const pct = Math.round((1 - pack.now / pack.was) * 100);
+      const statusHtml = st === "live"
+        ? `<span class="status-badge status-live">🔥 지금 골든타임 (${store.open})</span>`
+        : st === "soon"
+        ? `<span class="status-badge status-soon">⏰ 곧 오픈 (${store.open})</span>`
+        : `<span class="status-badge status-off">오늘 ${store.open} 예정</span>`;
+
+      return `
+        <div class="store-card ${store.isAd ? 'ad-card' : ''}" onclick="openSheet(${store.id})">
+          <div class="store-top">
+            <div class="store-name">
+              ${store.name}
+              ${store.isAd ? '<span class="ad-badge">AD 상단노출</span>' : ''}
+            </div>
+            ${statusHtml}
+          </div>
+          <div class="store-meta">
+            <span>🚶 도보 ${store.walk}분 (${store.area})</span>
+            <span>·</span>
+            <span class="ai-pred-tag">🤖 ${store.aiPredictTime}</span>
+          </div>
+          <div class="bag-preview">
+            <div class="bag-info">
+              <div class="bag-emoji">${pack.emoji}</div>
+              <div>
+                <div class="bag-title">${pack.title}</div>
+                <div class="bag-desc">${pack.desc}</div>
+              </div>
+            </div>
+            <div class="bag-price">
+              <div class="price-was">${pack.was.toLocaleString()}원</div>
+              <div class="price-now"><span class="discount-pct">${pct}%</span>${pack.now.toLocaleString()}원</div>
+              <div class="left-pill">⚡ 잔여 ${pack.left}꾸러미</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    renderNaverMarkers();
+  }
+
+  function setFilter(filter, btn) {
+    currentFilter = filter;
+    document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+    btn.classList.add("active");
+    renderStores();
+  }
+
+  // 바텀시트 열기
+  function openSheet(storeId) {
+    activeStore = STORES.find(s => s.id === storeId);
+    selectedPackIdx = 0;
+    if (!activeStore) return;
+
+    document.getElementById("sheetBadges").innerHTML = `
+      <span class="ai-pred-tag">🤖 ${activeStore.aiPredictTime}</span>
+      <span style="font-size:11px; color:var(--sub); margin-left:6px;">🚶 충북대 기준 도보 ${activeStore.walk}분</span>
+    `;
+    document.getElementById("sheetTitle").textContent = activeStore.name;
+    document.getElementById("sheetMeta").textContent = `마감 픽업 시간: ${activeStore.open} · ${activeStore.aiReason}`;
+
+    renderSheetPacks();
+
+    const btn = document.getElementById("reserveBtn");
+    btn.classList.remove("done");
+    btn.textContent = "🎁 선택한 랜덤꾸러미 픽업 예약 & 알림받기";
+
+    document.getElementById("sheetBackdrop").classList.add("open");
+  }
+
+  function renderSheetPacks() {
+    const container = document.getElementById("sheetPacks");
+    container.innerHTML = activeStore.packs.map((p, idx) => {
+      const pct = Math.round((1 - p.now / p.was) * 100);
+      return `
+        <div class="pack-card ${idx === selectedPackIdx ? 'selected' : ''}" onclick="selectPack(${idx})">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+              <div style="font-size:15px; font-weight:800;">${p.emoji} ${p.title}</div>
+              <div style="font-size:12px; color:var(--sub); margin-top:3px;">${p.desc}</div>
+            </div>
+            <div style="text-align:right; min-width:95px;">
+              <div class="price-was">${p.was.toLocaleString()}원</div>
+              <div class="price-now"><span class="discount-pct">${pct}%</span>${p.now.toLocaleString()}원</div>
+              <div class="left-pill">남은 수량 ${p.left}개</div>
+            </div>
+          </div>
+          <div class="pack-tags">
+            ${p.tags.map(t => `<span class="pack-tag">#${t}</span>`).join("")}
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function selectPack(idx) {
+    selectedPackIdx = idx;
+    renderSheetPacks();
+  }
+
+  function reservePack() {
+    if (!activeStore) return;
+    const pack = activeStore.packs[selectedPackIdx];
+    if (pack.left > 0) pack.left -= 1;
+    renderSheetPacks();
+    renderStores();
+
+    const btn = document.getElementById("reserveBtn");
+    btn.classList.add("done");
+    btn.textContent = `✅ 예약 완료! 픽업 시간(${activeStore.open}) 10분 전에 알림을 보내드릴게요`;
+  }
+
+  function closeSheet(e) {
+    document.getElementById("sheetBackdrop").classList.remove("open");
+  }
+
+  // 소비자 <-> 사장님 화면 전환
+  function switchMode(mode) {
+    const cView = document.getElementById("consumerView");
+    const oView = document.getElementById("ownerView");
+    const tCon = document.getElementById("tabConsumer");
+    const tOwn = document.getElementById("tabOwner");
+
+    if (mode === "owner") {
+      cView.style.display = "none";
+      oView.style.display = "block";
+      tCon.classList.remove("active");
+      tOwn.classList.add("active");
+      renderOwnerView();
+    } else {
+      cView.style.display = "block";
+      oView.style.display = "none";
+      tOwn.classList.remove("active");
+      tCon.classList.add("active");
+    }
+  }
+
+  // 사장님 AI 예측 화면 렌더링
+  function renderOwnerView() {
+    const tabsEl = document.getElementById("ownerStoreTabs");
+    tabsEl.innerHTML = STORES.map(s => `
+      <button class="store-pill ${s.id === ownerSelectedId ? 'active' : ''}" onclick="selectOwnerStore(${s.id})">
+        ${s.name.split(" ")[0]}
+      </button>
+    `).join("");
+
+    const store = STORES.find(s => s.id === ownerSelectedId) || STORES[0];
+    const pack = store.packs[0];
+    const pct = Math.round((1 - pack.now / pack.was) * 100);
+
+    document.getElementById("ownerAiCard").innerHTML = `
+      <span class="ai-card-badge">✨ 18:30 AI 골든타임 원터치 추천 카드</span>
+      <div class="ai-card-title">
+        사장님, 오늘 마감 시점 <b>예상 잔여 ${store.aiRemainCount}꾸러미</b>가 예측됩니다.<br>
+        <b>${store.open.split("~")[0]}부터 ${pct}% 할인</b>으로 선제 오픈할까요?
+      </div>
+      <p style="font-size:12px; color:var(--sub);">${store.aiReason}</p>
+      <div class="ai-metrics">
+        <div>
+          <div class="ai-metric-val">${store.aiRemainCount}꾸러미</div>
+          <div class="ai-metric-lbl">AI 예상 잔여량</div>
+        </div>
+        <div>
+          <div class="ai-metric-val">${store.open.split("~")[0]}</div>
+          <div class="ai-metric-lbl">추천 골든타임</div>
+        </div>
+        <div>
+          <div class="ai-metric-val">${pack.now.toLocaleString()}원 (${pct}%)</div>
+          <div class="ai-metric-lbl">추천 꾸러미가</div>
+        </div>
+      </div>
+      <button class="ai-approve-btn" id="aiApproveBtn" onclick="approveAiCard()">
+        👍 추천 내용 그대로 1초 만에 꾸러미 등록하기
+      </button>
+    `;
+  }
+
+  function selectOwnerStore(id) {
+    ownerSelectedId = id;
+    renderOwnerView();
+  }
+
+  function approveAiCard() {
+    const btn = document.getElementById("aiApproveBtn");
+    btn.classList.add("approved");
+    btn.textContent = "✅ 승인 완료! 소비자 앱에 골든타임 랜덤꾸러미가 예약 노출됩니다";
+  }
+
+  document.getElementById("demoSwitch").addEventListener("change", renderStores);
+
+  updateClock();
+  setInterval(updateClock, 30000);
+  renderStores();
+  window.addEventListener("load", initMap);
 </script>
 </body>
 </html>
