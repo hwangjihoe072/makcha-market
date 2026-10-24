@@ -208,30 +208,6 @@
     </div>
   </div>
 
-  <div class="roi-box">
-    <div style="font-size:14px; font-weight:800;">📊 우리 매장 월간 예상 경제성 리포트 (기준 시나리오)</div>
-    <p style="font-size:11px; color:var(--sub); margin-top:2px;">일 생산 80개 · AI 도입 후 폐기 30% 감소 · 할인 소진율 70% 기준</p>
-    <div class="roi-grid">
-      <div class="roi-card">
-        <span style="font-size:11px; color:var(--sub);">월 마감꾸러미 회수액</span>
-        <b>+270,000원</b>
-      </div>
-      <div class="roi-card">
-        <span style="font-size:11px; color:var(--sub);">AI 발주 조정 원가절감</span>
-        <b>+103,000원</b>
-      </div>
-      <div class="roi-card">
-        <span style="font-size:11px; color:var(--sub);">구독료(9,900원) 차감 순익</span>
-        <b style="color:var(--green);">월 +351,000원</b>
-      </div>
-      <div class="roi-card">
-        <span style="font-size:11px; color:var(--sub);">초기 3개월 중개수수료</span>
-        <b style="color:var(--ai-purple);">0% (전액 면제)</b>
-      </div>
-    </div>
-  </div>
-</div>
-
 <div class="sheet-backdrop" id="sheetBackdrop" onclick="closeSheet(event)">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-head">
@@ -271,7 +247,7 @@
       id: 1,
       name: "프로마치",
       category: "sandwich",
-      area: "충북대 정문 앞",
+      area: "충북대 중문",
       address: "충북 청주시 서원구 1순환로 696 1층",
       lat: 36.6316,
       lng: 127.4610,
@@ -306,7 +282,7 @@
       id: 2,
       name: "올인베이커리 청주충북대점",
       category: "bakery",
-      area: "충북대 중문 인근",
+      area: "충북대 중문",
       address: "충북 청주시 서원구 1순환로672번길 48 1층",
       lat: 36.6328,
       lng: 127.4575,
@@ -324,13 +300,13 @@
           now: 3500,
           left: 5,
           desc: "단팥빵·소보로·크림빵·피자빵 등 인기 베이커리 랜덤팩",
-          tags: ["인기 빵 10종 랜덤", "자취생 아침·간식용"]
+          tags: ["인기 빵 5종 랜덤", "자취생 아침·간식용"]
         },
       ]
     },
     {
       id: 3,
-      name: "우븐 (Woven)",
+      name: "우븐",
       category: "bakery",
       area: "충북대 중문·사창동",
       address: "충북 청주시 서원구 사직대로112번길 15 1층",
@@ -341,16 +317,16 @@
       isFeatured: false,
       aiPredictTime: "18:00 AI 예측 완료",
       aiRemainCount: 3,
-      aiReason: "디저트·구움과자류 마감 잔여 3세트 예측 → 19:00 34% 할인 골든타임 오픈",
+      aiReason: "소금빵·에그타르트 마감 잔여 3세트 예측 → 19:00 34% 할인 골든타임 오픈",
       packs: [
         {
-          title: "우븐 구움과자 & 베이커리 럭키박스",
+          title: "우븐 베이커리 럭키박스",
           emoji: "🧁",
           was: 13500,
-          now: 8900,
+          now: 7900,
           left: 3,
-          desc: "휘낭시에·스콘·소금빵 등 우븐 당일 베이커리 3~4종 시크릿 꾸러미",
-          tags: ["구움과자·스콘 3~4종", "카페 디저트 꾸러미", "당일 생산 확인"]
+          desc: "소금빵·에그타르트 우븐 당일 베이커리 3~4종 시크릿 꾸러미",
+          tags: ["소금빵·에그타르트 3~4종", "소금빵 맛집", "당일 생산 확인"]
         }
       ]
     },
@@ -370,22 +346,22 @@
       aiReason: "하교 시간대 유동 데이터 기반 19:30 35% 선제 할인 추천",
       packs: [
         {
-          title: "제제커베 커피&베이커리 마감 랜덤세트",
+          title: "제제커베 베이커리 마감 랜덤세트",
           emoji: "🥨",
           was: 11000,
           now: 7200,
           left: 3,
-          desc: "당일 만든 베이커리·케이크 조각·쿠키류 중 3종 랜덤 구성",
-          tags: ["베이커리·디저트 3종", "하교 동선 픽업", "당일 소비기한 보장"]
+          desc: "당일 만든 베이커리·휘낭시에 중 3종 랜덤 구성",
+          tags: ["베이커리·휘낭시에 3종", "하교 동선 픽업", "당일 소비기한 보장"]
         }
       ]
     },
     {
       id: 5,
-      name: "웰빙앤찬 (반찬가게)",
+      name: "웰빙앤찬",
       category: "banchan",
       area: "사창시장 내",
-      address: "충북 청주시 서원구 창신로31번길 3 (사창시장 안)",
+      address: "충북 청주시 서원구 창신로31번길 3",
       lat: 36.6336,
       lng: 127.4642,
       walk: 8,
@@ -396,22 +372,13 @@
       aiReason: "당일 조리 반찬 잔여량 예측 → 저녁 식사 준비 시간대(18:30) 40% 할인 추천",
       packs: [
         {
-          title: "자취생 집밥 반찬 5종 랜덤박스",
+          title: "자취생 집밥 반찬 4종 랜덤박스",
           emoji: "🍱",
           was: 15000,
           now: 8900,
           left: 4,
-          desc: "메인 고기/생선반찬 1종 + 나물·조림·김치류 4종 등 오늘 만든 반찬 5종 꾸러미",
-          tags: ["메인반찬 1 + 밑반찬 4", "1인가구 3~4끼 해결", "당일 조리·위생포장"]
-        },
-        {
-          title: "오늘의 국·찌개 + 반찬 2종 실속꾸러미",
-          emoji: "🍲",
-          was: 10000,
-          now: 6500,
-          left: 2,
-          desc: "당일 끓인 수제 국/찌개 1팩 + 어울리는 밑반찬 2종 랜덤 구성",
-          tags: ["수제 국/찌개 포함", "저녁 한 끼 완성", "당일 소비 권장"]
+          desc: "메인 고기/생선반찬 1종 + 나물·조림·김치류 3종 등 오늘 만든 반찬 4종 꾸러미",
+          tags: ["메인반찬 1 + 밑반찬 3", "1인가구 3~4끼 해결", "당일 조리·위생포장"]
         }
       ]
     }
